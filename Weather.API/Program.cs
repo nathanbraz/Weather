@@ -1,5 +1,10 @@
 using Microsoft.EntityFrameworkCore;
+using Weather.API.AutoMapper;
 using Weather.Infra.Context;
+using Weather.Infra.Interfaces;
+using Weather.Infra.Repositories;
+using Weather.Services.Interfaces;
+using Weather.Services.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +15,11 @@ builder.Services.AddDbContext<WeatherContext>(options => options.UseMySql(mySqlC
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddScoped<IWeatherCityRepository, WeatherCityRepository>();
+builder.Services.AddScoped<IWeatherCityService, WeatherCityService>();
+
+builder.Services.AddAutoMapper(typeof(MappingConfiguration));
 
 var app = builder.Build();
 
