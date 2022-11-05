@@ -17,7 +17,6 @@ namespace Weather.API.Controllers
     public class WeatherController : Controller
     {
         private readonly IWeatherCityService serviceWeatherCity;
-        private readonly string KeyAPI = "7051809fc0c57d78a4fbcd7d0d138983";
 
         public WeatherController(IWeatherCityService serviceWeatherCity)
         {
@@ -36,7 +35,7 @@ namespace Weather.API.Controllers
                 // caso não retorne nada, então a requisição é feita na api externa e os dados são inseridos no bancos a serem usados como cache nos próximos 20 min
                 if (weatherCity == null)
                 {
-                    var externalAPI = await GetWeatherMapByCity(city);
+                    var externalAPI = await OpenWeatherMapApiClient.GetWeatherMapByCity(city);
 
                     var weatherCityToCreate = new WeatherCityDTO()
                     {
@@ -75,27 +74,6 @@ namespace Weather.API.Controllers
                     Data = null
                 });
             }            
-        }
-
-        [NonAction]
-        public async Task<MainViewModel> GetWeatherMapByCity(string city)
-        {
-            var client = new HttpClient();
-
-            var response = await client.GetAsync($"https://api.openweathermap.org/data/2.5/weather?q={city}&units=metric&appid={this.KeyAPI}");
-            response.EnsureSuccessStatusCode();
-
-            string responseBody = await response.Content.ReadAsStringAsync();
-
-            var jsonResult = JObject.Parse(responseBody);
-
-            var main = jsonResult["main"];
-
-            var newJson = JsonConvert.SerializeObject(main);
-
-            var result = JsonConvert.DeserializeObject<MainViewModel>(newJson);
-
-            return result;
         }
     }
 }
