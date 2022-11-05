@@ -18,14 +18,14 @@ namespace Weather.Infra.Repositories
             this.context = context;
         }
 
-        public async Task<WeatherCity> GetByCity(string City)
+        public async Task<WeatherCity> GetByCity(string city)
         {
-            var Date = DateTime.Now.AddMinutes(-20);
+            var date = DateTime.Now.AddMinutes(-20);
 
             // se retornar algum dado, significa que existe um registro no banco onde a data dele é mais que vinte minutos da data atual, então se não retornar algo a aplicação deve fazer uma requisição na api externa
             var weatherCity = await context.WeatherCities
                                             .AsNoTracking()
-                                            .Where(x => x.City.ToLower() == City.ToLower() && x.Date >= Date)
+                                            .Where(x => x.City.ToLower() == city.ToLower() && x.Date >= date)
                                             .ToListAsync();
 
             return weatherCity.FirstOrDefault();

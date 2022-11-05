@@ -26,23 +26,5 @@ namespace Weather.Infra.Repositories
 
             return Obj;
         }
-
-        public virtual async Task<T> Get(int Id)
-        {
-            var obj = await context.Set<T>()
-                                    .AsNoTracking()
-                                    .Where(x => x.Id == Id)
-                                    .ToListAsync();
-
-            return obj.FirstOrDefault();
-        }
-
-        //public virtual async Task<T> Update(T Obj)
-        //{
-        //    context.Entry(Obj).State = EntityState.Modified;
-        //    await context.SaveChangesAsync();
-
-        //    return Obj;
-        //}
     }
 }

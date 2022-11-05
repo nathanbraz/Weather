@@ -8,8 +8,8 @@ namespace Weather.API.AutoMapper
     {
         public MappingConfiguration()
         {
-            CreateMap<WeatherCity, WeatherCityDTO>();
-            CreateMap<WeatherCityDTO, WeatherCity>();
+            CreateMap<WeatherCity, WeatherCityDTO>()
+                .ReverseMap();
         }
     }
 }

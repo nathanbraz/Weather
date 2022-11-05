@@ -9,6 +9,6 @@ namespace Weather.Infra.Interfaces
 {
     public interface IWeatherCityRepository : IBaseRepository<WeatherCity>
     {
-        Task<WeatherCity> GetByCity(string City);
+        Task<WeatherCity> GetByCity(string city);
     }
 }

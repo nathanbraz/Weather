@@ -10,7 +10,6 @@ namespace Weather.Services.Interfaces
     public interface IWeatherCityService
     {
         Task<WeatherCityDTO> Create(WeatherCityDTO weatherCityDTO);
-        //Task<WeatherCityDTO> Update(WeatherCityDTO weatherCityDTO);
-        Task<WeatherCityDTO> GetByCity(string City);
+        Task<WeatherCityDTO> GetByCity(string city);
     }
 }

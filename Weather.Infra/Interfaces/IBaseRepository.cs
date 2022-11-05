@@ -10,7 +10,5 @@ namespace Weather.Infra.Interfaces
     public interface IBaseRepository<T> where T: Base
     {
         Task<T> Create(T Obj);
-        //Task<T> Update(T Obj);
-        Task<T> Get(int Id);
     }
 }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Weather.Services.DTO
 {
-    public  class WeatherCityDTO
+    public class WeatherCityDTO
     {
         public int Id { get; set; }
         public string City { get; set; }

@@ -5,6 +5,7 @@ using Newtonsoft.Json.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using Weather.API.ViewModels;
 using Weather.Infra.Context;
 using Weather.Services.DTO;
 using Weather.Services.Interfaces;
@@ -16,7 +17,6 @@ namespace Weather.API.Controllers
     public class WeatherController : Controller
     {
         private readonly IWeatherCityService serviceWeatherCity;
-
         private readonly string KeyAPI = "7051809fc0c57d78a4fbcd7d0d138983";
 
         public WeatherController(IWeatherCityService serviceWeatherCity)
@@ -25,41 +25,64 @@ namespace Weather.API.Controllers
         }
 
         [HttpGet]
-        [Route("/api/v1/city/{City}")]
-        public async Task<IActionResult> GetByCityAsync([FromRoute] string City)
+        [Route("/api/v1/city/{city}")]
+        public async Task<IActionResult> GetByCityAsync([FromRoute] string city)
         {
-            // se retornar alguma dado significa que existem dados climáticos dos últimos 20 minutos referente a esta cidade
-            var weatherCities = await serviceWeatherCity.GetByCity(City);
-
-            if(weatherCities == null)
+            try
             {
-                var teste = await GetWeatherMapByCity(City);
+                // se retornar alguma dado significa que existem dados climáticos dos últimos 20 minutos referente a esta cidade
+                var weatherCity = await serviceWeatherCity.GetByCity(city);
 
-                var weather2 = new WeatherCityDTO()
+                // caso não retorne nada, então a requisição é feita na api externa e os dados são inseridos no bancos a serem usados como cache nos próximos 20 min
+                if (weatherCity == null)
                 {
-                    City = City,
-                    Temp = teste.Temp.Value,
-                    TempMin = teste.TempMin.Value,
-                    TempMax = teste.TempMax.Value,
-                    Date = DateTime.Now
-                };
+                    var externalAPI = await GetWeatherMapByCity(city);
 
-                var weatherCreated = await serviceWeatherCity.Create(weather2);
+                    var weatherCityToCreate = new WeatherCityDTO()
+                    {
+                        City = city,
+                        Temp = externalAPI.Temp.Value,
+                        TempMin = externalAPI.TempMin.Value,
+                        TempMax = externalAPI.TempMax.Value,
+                        Date = DateTime.Now
+                    };
 
-                return Ok(weatherCreated);
+                    var weatherCreated = await serviceWeatherCity.Create(weatherCityToCreate);
+
+                    return Ok(new ResultViewModel
+                    {
+                        Message = "Informações recuperadas externamente.",
+                        Success = true,
+                        Data = weatherCreated
+                    });
+                }
+                else
+                {
+                    return Ok(new ResultViewModel
+                    {
+                        Message = "Informações recuperadas por cache.",
+                        Success = true,
+                        Data = weatherCity
+                    });
+                }
             }
-            else
+            catch (Exception ex)
             {
-                return Ok(weatherCities);
+                return Ok(new ResultViewModel
+                {
+                    Message = ex.Message,
+                    Success = false,
+                    Data = null
+                });
             }            
         }
 
         [NonAction]
-        public async Task<Main> GetWeatherMapByCity(string City)
+        public async Task<MainViewModel> GetWeatherMapByCity(string city)
         {
             var client = new HttpClient();
 
-            var response = await client.GetAsync($"https://api.openweathermap.org/data/2.5/weather?q={City}&units=metric&appid={this.KeyAPI}");
+            var response = await client.GetAsync($"https://api.openweathermap.org/data/2.5/weather?q={city}&units=metric&appid={this.KeyAPI}");
             response.EnsureSuccessStatusCode();
 
             string responseBody = await response.Content.ReadAsStringAsync();
@@ -70,37 +93,9 @@ namespace Weather.API.Controllers
 
             var newJson = JsonConvert.SerializeObject(main);
 
-            var result = JsonConvert.DeserializeObject<Main>(newJson);
+            var result = JsonConvert.DeserializeObject<MainViewModel>(newJson);
 
             return result;
         }
-    }
-
-    
-    public class Main
-    {
-        [JsonProperty(PropertyName = "temp")]
-        public decimal? Temp { get; set; }
-
-        [JsonProperty(PropertyName = "feels_like")]
-        public decimal? FeelsLike { get; set; }
-
-        [JsonProperty(PropertyName = "temp_min")]
-        public decimal? TempMin { get; set; }
-
-        [JsonProperty(PropertyName = "temp_max")]
-        public decimal? TempMax { get; set; }
-
-        [JsonProperty(PropertyName = "pressure")]
-        public decimal? Pressure { get; set; }
-
-        [JsonProperty(PropertyName = "humidity")]
-        public decimal? Humidity { get; set; }
-
-        [JsonProperty(PropertyName = "sea_level")]
-        public int? SeaLevel { get; set; }
-
-        [JsonProperty(PropertyName = "grnd_level")]
-        public int? GrndLevel { get; set; }
     }
 }

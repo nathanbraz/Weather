@@ -30,16 +30,11 @@ namespace Weather.Services.Services
             return mapper.Map<WeatherCityDTO>(created);
         }
 
-        public async Task<WeatherCityDTO> GetByCity(string City)
+        public async Task<WeatherCityDTO> GetByCity(string city)
         {
-            var weatherCity = await weatherCityRepository.GetByCity(City);
+            var weatherCity = await weatherCityRepository.GetByCity(city);
 
             return mapper.Map<WeatherCityDTO>(weatherCity);
         }
-
-        //public Task<WeatherCityDTO> Update(WeatherCityDTO userDTO)
-        //{
-        //    throw new NotImplementedException();
-        //}
     }
 }
